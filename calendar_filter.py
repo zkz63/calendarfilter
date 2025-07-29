@@ -56,10 +56,11 @@ def filter_groups(df: pd.DataFrame, allowed_groups: List[str]) -> pd.DataFrame:
 
     def keep_event(subject: str) -> bool:
         if not subject:
-            return False
+            return True  # Keep events with no subject just in case
         found_groups = extract_all_groups(subject)
-        print(f"Subject: {subject} -> Groups found: {found_groups}")
-        return any(group in allowed_set for group in found_groups)
+        if not found_groups:
+            return True  # Keep non-group events
+        return any(group in allowed_set for group in found_groups)  # Only keep if at least one group matches
 
     filtered = df[df["subject"].apply(keep_event)]
     print(f"Filtered {len(filtered)} events out of {len(df)} total")

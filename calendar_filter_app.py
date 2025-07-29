@@ -48,12 +48,14 @@ def extract_all_groups(text):
 
     return groups
 
-# --- Function to filter groups ---
+# --- Function to filter groups (keeps non-group events too) ---
 def filter_groups(df, allowed_groups):
     allowed_groups = set(g.upper() for g in allowed_groups)
 
     def keep_event(subject):
         found_groups = extract_all_groups(subject)
+        if not found_groups:
+            return True  # Keep non-group events
         return any(group.upper() in allowed_groups for group in found_groups)
 
     return df[df["subject"].apply(keep_event)]
