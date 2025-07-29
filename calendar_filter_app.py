@@ -58,6 +58,30 @@ def filter_groups(df, allowed_groups):
 
     return df[df["subject"].apply(keep_event)]
 
+# --- Convert DataFrame to Google Calendar CSV format ---
+def to_google_calendar_csv(df):
+    def parse_datetime(dt_str):
+        try:
+            return datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return None
+
+    starts = df['start'].apply(parse_datetime)
+    ends = df['end'].apply(parse_datetime)
+
+    gcal_df = pd.DataFrame({
+        "Subject": df["subject"].fillna(""),
+        "Start Date": starts.dt.strftime("%m/%d/%Y"),
+        "Start Time": starts.dt.strftime("%I:%M:%S %p"),
+        "End Date": ends.dt.strftime("%m/%d/%Y"),
+        "End Time": ends.dt.strftime("%I:%M:%S %p"),
+        "All Day Event": "False",  # Adjust if you want to support all-day events
+        "Description": df["description"].fillna(""),
+        "Location": df["location"].fillna("")
+    })
+
+    return gcal_df
+
 # --- Streamlit Interface ---
 st.title("Calendar Filter App")
 
@@ -74,5 +98,7 @@ if uploaded_file and group_input:
     st.success(f"{len(filtered_df)} events matched your group filters.")
     st.dataframe(filtered_df)
 
-    csv_data = filtered_df.to_csv(index=False)
-    st.download_button("Download filtered CSV", csv_data, "filtered_calendar.csv", "text/csv")
+    google_csv_df = to_google_calendar_csv(filtered_df)
+    csv_data = google_csv_df.to_csv(index=False)
+
+    st.download_button("Download Google Calendar CSV", csv_data, "google_calendar.csv", "text/csv")
