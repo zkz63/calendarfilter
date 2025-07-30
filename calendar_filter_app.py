@@ -5,6 +5,10 @@ from datetime import datetime
 import re
 
 # --- Function to parse ICS into DataFrame ---
+from datetime import datetime, timedelta
+
+# ... keep your imports and other code
+
 def ics_to_df(ics_content):
     cal = Calendar.from_ical(ics_content)
     events = []
@@ -15,6 +19,12 @@ def ics_to_df(ics_content):
             description = component.get('description')
             dtstart = component.get('dtstart').dt
             dtend = component.get('dtend').dt
+            
+            # Adjust timezone by subtracting 4 hours (or your offset)
+            if isinstance(dtstart, datetime):
+                dtstart = dtstart - timedelta(hours=4)
+            if isinstance(dtend, datetime):
+                dtend = dtend - timedelta(hours=4)
 
             start = dtstart.strftime("%Y-%m-%d %H:%M:%S") if isinstance(dtstart, datetime) else str(dtstart)
             end = dtend.strftime("%Y-%m-%d %H:%M:%S") if isinstance(dtend, datetime) else str(dtend)
